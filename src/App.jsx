@@ -1,24 +1,37 @@
 import { useState } from "react";
 
-// const initialItems = [
-//   { id: 1, description: "Passports", quantity: 2, packed: false},
-//   { id: 2, description: "Socks", quantity: 12, packed: true},
-//   { id: 3, description: "Charger", quantity: 1, packed: false},
-// ];
+const initialItems = [
+  { id: 1, description: "Passports", quantity: 2, packed: false},
+  { id: 2, description: "Socks", quantity: 12, packed: true},
+  { id: 3, description: "Charger", quantity: 1, packed: false},
+];
 
 export default function App() {
+  // Lifted up this state from Form() component:
   const [items, setItems] = useState([]);
 
+  // created a function to addItems and pass it as props:
   function handleAddItems(item) {
     setItems(items => [...items, item]);
+    console.table(items);
+  }
+
+  // created a function to deleteItems and pass it as props:
+  function handleDeleteItem(id) {
+    setItems(items => items.filter(item => item.id !== id));
+    
+  }
+
+  function handleToggleItem(id) {
+    setItems(items => items.map(item => id === item.id ? {...item, packed: !item.packed} : item))
   }
 
   return (
   <div className="app">
     <Logo />
     <Form onAddItems={handleAddItems}/>
-    <PackingList items={ items }/>
-    <Stats />
+    <PackingList items={ items } onDeleteItem={handleDeleteItem} onToggleItem={handleToggleItem} />
+    <Stats items={ items } />
   </div>
   );
 }
@@ -60,41 +73,60 @@ function Form({ onAddItems }) {
       </select>
 
       {/* Type > setDescription's State(description) > put it as value */}
-      <input type='text' placeholder="Item..." value={description} onChange={(e) => setDescription(e.target.value)}/>
+      <input type='text' placeholder="Item..." value={description} 
+        onChange={(e) => setDescription(e.target.value)}/>
       <button>Add</button>
     </form>
   );
 }
 
-function PackingList({ items }) {
+function PackingList({ items, onDeleteItem, onToggleItem }) {
   return (
     <div className="list">
       <ul>
         {/* Iterate through the Items */}
         {items.map(item=>
-          <Item item={item} key={item.id} />
+          <Item item={item} onDeleteItem={onDeleteItem} onToggleItem={onToggleItem} key={item.id} />
         )}
       </ul>
     </div>
   );
 }
 
-function Item({ item }) {
+function Item({ item, onDeleteItem, onToggleItem }) {
   return (
     <li>
+      <input type="checkbox" value={item.packed} onChange={() => onToggleItem(item.id)} />
       {/* Cross-off "packed" items */}
       <span style={item.packed ? {textDecoration: "line-through"}: {}}>
         {item.quantity} {item.description}
       </span>
-      <button>❌</button>
+      <button onClick={() => onDeleteItem(item.id) }>❌</button>
     </li>
   );
 }
 
-function Stats() {
+function Stats({ items }) {
+  // Early return so we don't have to do the calculations below if there's no item.
+  if (!items.length) 
+    return (
+    <p className="stats">
+      <em>Start adding some items to your packing list 🚀</em>
+    </p>
+  );
+
+  // This is about Derived State:
+  const numItems = items.length;
+  const numPacked = items.filter((item) => item.packed).length;
+  const percentage = Math.round((numPacked / numItems) * 100);
+
   return (
     <footer className="stats">
-      <em>You have X items on your list, and you already packed X (X%)</em>
+      <em>
+        {percentage === 100 ? 'You got everything! Ready to go ✈️' : 
+        `You have ${numItems} items on your list, and you already packed ${numPacked} (${percentage}%)`
+        }
+      </em>
     </footer>
   );
 }
