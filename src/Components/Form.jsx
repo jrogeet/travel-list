@@ -13,7 +13,6 @@ export default function Form({ onAddItems }) {
     // Object or JSON data
     const newItem = { description, quantity, packed: false,
       id: Date.now()};
-    console.log(newItem);
 
     onAddItems(newItem);
 

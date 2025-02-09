@@ -17,7 +17,6 @@ export default function App() {
   // created a function to addItems and pass it as props:
   function handleAddItems(item) {
     setItems(items => [...items, item]);
-    console.table(items);
   }
 
   // created a function to deleteItems and pass it as props:
